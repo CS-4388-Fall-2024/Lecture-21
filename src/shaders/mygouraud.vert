@@ -46,7 +46,19 @@ out vec2 uv;
 
 void main() 
 {
-    //output
-    gl_Position = vec4(0, 0, 0, 1);
+    
+    vec3 worldPosition = (modelMatrix * vec4(position, 1)).xyz;
 
+    // Lighting calculations
+    vec3 illumination = vec3(0,0,0);
+    for(int i=0; i< numLights; i++){
+        illumination += kAmbient * ambientIntensities[i];
+
+        
+
+    }
+    vertColor = color;
+    vertColor.rgb *= illumination;
+
+    gl_Position = projectionMatrix * viewMatrix * vec4(worldPosition, 1);
 }
