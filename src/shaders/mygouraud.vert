@@ -46,19 +46,47 @@ out vec2 uv;
 
 void main() 
 {
-    
+    //position in world space  
     vec3 worldPosition = (modelMatrix * vec4(position, 1)).xyz;
+
+    //normal in world space
+    vec3 worldNormal = normalize((normalMatrix * vec4(normal, 0)).xyz);
 
     // Lighting calculations
     vec3 illumination = vec3(0,0,0);
+
     for(int i=0; i< numLights; i++){
+        //ambient component
         illumination += kAmbient * ambientIntensities[i];
 
-        
+        //light direction vector - dont forget to normalize!
+        vec3 l; 
+        if(lightTypes[i] == POINT_LIGHT)
+            l = normalize(lightPositionsWorld[i] - worldPosition);
+        else
+            l = normalize(lightPositionsWorld[i]);
+
+        //diffuse component
+        float diffuseComponent = max(dot(worldNormal, l), 0.0);
+        illumination += kDiffuse * diffuseIntensities[i] * diffuseComponent;
+
+        //Compute the vector from the vertex position to the eye
+        vec3 e = normalize(eyePositionWorld - worldPosition);
+
+        //Compute the halfway vector for the Blinn-Phong reflection model
+        vec3 h =  normalize(l + e);
+
+        //Specular component
+        float specularComponent = pow(max(dot(h, worldNormal), 0.0), shininess);
+        illumination += kSpecular * specularIntensities[i] * specularComponent;
+
 
     }
     vertColor = color;
     vertColor.rgb *= illumination;
+
+    //output the texture coordinates to the fragment shader
+    uv = texCoord.xy;
 
     gl_Position = projectionMatrix * viewMatrix * vec4(worldPosition, 1);
 }

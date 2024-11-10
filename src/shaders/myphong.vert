@@ -28,5 +28,18 @@ out vec2 uv;
 
 void main() 
 {
-    gl_Position = vec4(0, 0, 0, 1);
+    //position in world space  
+    vertPositionWorld = (modelMatrix * vec4(position, 1)).xyz;
+
+    //normal in world space
+    vertNormalWorld = normalize((normalMatrix * vec4(normal, 0)).xyz);
+
+    //output the vertex color to the fragment shader
+    vertColor = color;
+
+    //output the texture coordinates to the fragment shader
+    uv = texCoord.xy;
+
+    // compute the 2D screen coordinate position
+    gl_Position = projectionMatrix * viewMatrix * vec4(vertPositionWorld, 1);
 }
